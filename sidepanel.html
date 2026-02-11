@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twitter AI Bot</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #15202b;
+      color: #ffffff;
+      min-height: 100vh;
+      padding: 16px;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #38444d;
+    }
+    
+    .header h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .logo {
+      font-size: 28px;
+    }
+    
+    /* 状态指示器 */
+    .status-section {
+      background: #192734;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0;
+    }
+    
+    .status-row:not(:last-child) {
+      border-bottom: 1px solid #38444d;
+    }
+    
+    .status-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #8899a6;
+      font-size: 14px;
+    }
+    
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #657786;
+    }
+    
+    .status-dot.connected {
+      background: #17bf63;
+      box-shadow: 0 0 8px rgba(23, 191, 99, 0.5);
+    }
+    
+    .status-dot.processing {
+      background: #ffad1f;
+      animation: pulse 1s infinite;
+    }
+    
+    .status-dot.error {
+      background: #e0245e;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .status-value {
+      font-size: 14px;
+      color: #ffffff;
+    }
+    
+    /* 按钮 */
+    .btn {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 9999px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 12px;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #1da1f2, #0d8ecf);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1a91da, #0c7abb);
+      transform: translateY(-1px);
+    }
+    
+    .btn-primary:disabled {
+      background: #38444d;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: #1da1f2;
+      border: 1px solid #1da1f2;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(29, 161, 242, 0.1);
+    }
+    
+    .btn-start {
+      background: linear-gradient(135deg, #17bf63, #0f9d58);
+      color: white;
+      font-size: 16px;
+    }
+    
+    .btn-start:hover {
+      background: linear-gradient(135deg, #14a857, #0d8a4d);
+      transform: translateY(-1px);
+    }
+    
+    .btn-stop {
+      background: linear-gradient(135deg, #e0245e, #c81e50);
+      color: white;
+    }
+    
+    .btn-stop:hover {
+      background: linear-gradient(135deg, #c81e50, #a81844);
+    }
+    
+    .running-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: rgba(23, 191, 99, 0.15);
+      border: 1px solid rgba(23, 191, 99, 0.3);
+      border-radius: 12px;
+      margin-bottom: 16px;
+      color: #17bf63;
+      font-weight: 500;
+    }
+    
+    .running-indicator {
+      width: 12px;
+      height: 12px;
+      background: #17bf63;
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
+    
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    
+    /* 配置区域 */
+    .config-section {
+      background: #192734;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .config-title {
+      font-size: 14px;
+      color: #8899a6;
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    
+    .config-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .config-row label {
+      font-size: 14px;
+      color: #ffffff;
+    }
+    
+    .config-row input[type="number"] {
+      width: 80px;
+      padding: 8px;
+      background: #15202b;
+      border: 1px solid #38444d;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 14px;
+      text-align: center;
+    }
+    
+    .config-row input:focus {
+      outline: none;
+      border-color: #1da1f2;
+    }
+    
+    .toggle-switch {
+      position: relative;
+      width: 48px;
+      height: 26px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #38444d;
+      border-radius: 26px;
+      transition: 0.3s;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+      background: #1da1f2;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+    
+    /* 日志区域 */
+    .log-section {
+      background: #192734;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .log-title {
+      font-size: 14px;
+      color: #8899a6;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .log-clear {
+      font-size: 12px;
+      color: #1da1f2;
+      cursor: pointer;
+    }
+    
+    .log-container {
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: "SF Mono", Monaco, monospace;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+    
+    .log-entry {
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(56, 68, 77, 0.5);
+    }
+    
+    .log-time {
+      color: #657786;
+      margin-right: 8px;
+    }
+    
+    .log-info { color: #1da1f2; }
+    .log-success { color: #17bf63; }
+    .log-warning { color: #ffad1f; }
+    .log-error { color: #e0245e; }
+    
+    /* 统计区域 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .stat-card {
+      background: #192734;
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1da1f2;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #8899a6;
+      margin-top: 4px;
+    }
+    
+    /* 当前任务 */
+    .current-task {
+      background: linear-gradient(135deg, rgba(29, 161, 242, 0.1), rgba(13, 142, 207, 0.1));
+      border: 1px solid rgba(29, 161, 242, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    
+    .current-task.active {
+      display: block;
+    }
+    
+    .task-title {
+      font-size: 12px;
+      color: #1da1f2;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    .task-content {
+      font-size: 14px;
+      color: #ffffff;
+      line-height: 1.5;
+    }
+    
+    /* 滚动条 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #192734;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #38444d;
+      border-radius: 3px;
+    }
+    
+    /* 内容类别网格 */
+    .category-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    
+    .category-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      background: #15202b;
+      border: 1px solid #38444d;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 12px;
+    }
+    
+    .category-item:hover {
+      border-color: #1da1f2;
+      background: rgba(29, 161, 242, 0.1);
+    }
+    
+    .category-item input[type="checkbox"] {
+      accent-color: #1da1f2;
+    }
+    
+    .category-item input[type="checkbox"]:checked + span {
+      color: #1da1f2;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <span class="logo">🤖</span>
+    <h1>Twitter AI Bot</h1>
+  </div>
+  
+  <!-- 状态指示器 -->
+  <div class="status-section">
+    <div class="status-row">
+      <span class="status-label">
+        <span class="status-dot" id="twitter-status"></span>
+        Twitter 连接
+      </span>
+      <span class="status-value" id="twitter-status-text">未连接</span>
+    </div>
+    <div class="status-row">
+      <span class="status-label">
+        <span class="status-dot" id="gemini-status"></span>
+        Gemini 连接
+      </span>
+      <span class="status-value" id="gemini-status-text">未连接</span>
+    </div>
+  </div>
+  
+  <!-- AI 模式选择 -->
+  <div class="config-section" style="margin-bottom: 16px;">
+    <div class="config-title">AI 模式选择</div>
+    <div class="config-row">
+      <label>
+        <input type="radio" name="ai-mode" value="gemini" checked> Gemini 网页版
+      </label>
+    </div>
+    <div class="config-row">
+      <label>
+        <input type="radio" name="ai-mode" value="api"> API 调用
+      </label>
+    </div>
+  </div>
+  
+  <!-- Gemini 模式控制 -->
+  <div id="gemini-mode-section">
+    <button class="btn btn-primary" id="open-gemini-btn">
+      打开 Gemini
+    </button>
+  </div>
+  
+  <!-- API 模式配置 -->
+  <div id="api-mode-section" style="display: none;">
+    <div class="config-section" style="margin-bottom: 16px;">
+      <div class="config-title">API 配置</div>
+      <div class="config-row" style="flex-direction: column; align-items: stretch;">
+        <label style="margin-bottom: 8px;">Base URL</label>
+        <input type="text" id="api-base-url" placeholder="https://api.hodlai.fun/v1" style="width: 100%;">
+      </div>
+      <div class="config-row" style="flex-direction: column; align-items: stretch; margin-top: 12px;">
+        <label style="margin-bottom: 8px;">API Key</label>
+        <input type="password" id="api-key" placeholder="sk-xxxxxxx" style="width: 100%;">
+      </div>
+      <div class="config-row" style="flex-direction: column; align-items: stretch; margin-top: 12px;">
+        <label style="margin-bottom: 8px;">模型</label>
+        <select id="api-model" style="width: 100%; padding: 8px; background: #15202b; color: #fff; border: 1px solid #38444d; border-radius: 8px;">
+          <option value="gpt-4o">GPT-4o</option>
+          <option value="gpt-4o-mini">GPT-4o Mini</option>
+          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+          <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
+          <option value="gemini-3-pro-preview">Gemini 3.0 Pro Preview</option>
+          <option value="grok-4.1-fast">Grok 4.1 fast</option>
+        </select>
+      </div>
+      <button class="btn btn-secondary" id="test-api-btn" style="margin-top: 12px;">
+        测试 API 连接
+      </button>
+      <div id="api-test-result" style="margin-top: 8px; font-size: 12px;"></div>
+    </div>
+  </div>
+  
+  <!-- 一键启动 -->
+  <button class="btn btn-start" id="start-auto-btn">
+    🚀 一键启动全自动模式
+  </button>
+  <button class="btn btn-stop" id="stop-auto-btn" style="display:none;">
+    ⏹ 停止自动模式
+  </button>
+  
+  <!-- 运行状态 -->
+  <div class="running-status" id="running-status" style="display:none;">
+    <div class="running-indicator"></div>
+    <span>全自动模式运行中...</span>
+  </div>
+  
+  <!-- 当前任务 -->
+  <div class="current-task" id="current-task">
+    <div class="task-title">正在处理</div>
+    <div class="task-content" id="task-content">-</div>
+  </div>
+  
+  <!-- 统计 -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="stat-hour">0</div>
+      <div class="stat-label">本小时回复</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-label">总计回复</div>
+    </div>
+  </div>
+  
+  <!-- 内容过滤 -->
+  <div class="config-section">
+    <div class="config-title">内容过滤（仅回复勾选的类别）</div>
+    <div class="category-grid" id="category-grid">
+      <label class="category-item">
+        <input type="checkbox" name="category" value="web3" checked>
+        <span>Web3/加密货币</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="category" value="tech" checked>
+        <span>科技/AI/编程</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="category" value="finance" checked>
+        <span>经济/金融</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="category" value="news" checked>
+        <span>时事/新闻</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="category" value="gaming">
+        <span>游戏/电竞</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="category" value="entertainment">
+        <span>娱乐/明星</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="category" value="sports">
+        <span>体育/运动</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="category" value="lifestyle">
+        <span>生活/日常</span>
+      </label>
+    </div>
+  </div>
+  
+  <!-- 语言过滤 -->
+  <div class="config-section">
+    <div class="config-title">语言过滤（仅回复勾选的语言）</div>
+    <div class="category-grid" id="language-grid">
+      <label class="category-item">
+        <input type="checkbox" name="language" value="zh" checked>
+        <span>🇨🇳 中文</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="language" value="ja" checked>
+        <span>🇯🇵 日文</span>
+      </label>
+      <label class="category-item">
+        <input type="checkbox" name="language" value="en" checked>
+        <span>🇺🇸 英文</span>
+      </label>
+    </div>
+  </div>
+  
+  <!-- 配置 -->
+  <div class="config-section">
+    <div class="config-title">回复设置</div>
+    <div class="config-row">
+      <label>启用自动回复</label>
+      <label class="toggle-switch">
+        <input type="checkbox" id="auto-reply-toggle">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="config-row">
+      <label>点赞阈值</label>
+      <input type="number" id="like-threshold" value="100" min="0">
+    </div>
+    <div class="config-row">
+      <label>转发阈值</label>
+      <input type="number" id="retweet-threshold" value="50" min="0">
+    </div>
+    <div class="config-row">
+      <label>每小时上限</label>
+      <input type="number" id="max-per-hour" value="10" min="1" max="15">
+    </div>
+    <div class="config-row" style="flex-direction: column; align-items: stretch; margin-top: 16px; padding-top: 16px; border-top: 1px solid #38444d;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <label>回复质量阈值</label>
+        <span id="threshold-value" style="color: #1da1f2; font-weight: bold;">80</span>
+      </div>
+      <input type="range" id="reply-threshold" value="80" min="50" max="95" step="5" style="width: 100%;">
+      <div style="display: flex; justify-content: space-between; font-size: 11px; color: #8899a6; margin-top: 4px;">
+        <span>50 (宽松)</span>
+        <span>80 (推荐)</span>
+        <span>95 (严格)</span>
+      </div>
+      <div style="font-size: 11px; color: #8899a6; margin-top: 8px;">
+        AI 评分 ≥ 此值才会回复，越高越严格
+      </div>
+    </div>
+  </div>
+  
+  <button class="btn btn-secondary" id="save-config-btn">保存设置</button>
+  
+  <!-- 日志 -->
+  <div class="log-section">
+    <div class="log-title">
+      <span>运行日志</span>
+      <span class="log-clear" id="clear-log">清空</span>
+    </div>
+    <div class="log-container" id="log-container">
+      <!-- 日志条目 -->
+    </div>
+  </div>
+  
+  <script src="sidepanel.js"></script>
+</body>
+</html>

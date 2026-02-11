@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Twitter AI Bot",
+  "version": "2.0.0",
+  "description": "自动识别 X (Twitter) 热门推文并通过 Gemini 生成高质量回帖",
+  
+  "permissions": [
+    "storage",
+    "activeTab",
+    "sidePanel",
+    "tabs",
+    "scripting",
+    "webNavigation"
+  ],
+  
+  "host_permissions": [
+    "https://twitter.com/*",
+    "https://x.com/*",
+    "https://gemini.google.com/*"
+  ],
+  
+  "side_panel": {
+    "default_path": "sidepanel.html"
+  },
+  
+  "background": {
+    "service_worker": "background.js"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["https://twitter.com/*", "https://x.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": ["https://gemini.google.com/*"],
+      "js": ["gemini-content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  
+  "action": {
+    "default_title": "打开 Twitter AI Bot 侧边栏"
+  }
+}
