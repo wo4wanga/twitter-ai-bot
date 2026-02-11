@@ -433,63 +433,39 @@
     </div>
     <div class="status-row">
       <span class="status-label">
-        <span class="status-dot" id="gemini-status"></span>
-        Gemini 连接
+        <span class="status-dot" id="api-status"></span>
+        API 状态
       </span>
-      <span class="status-value" id="gemini-status-text">未连接</span>
+      <span class="status-value" id="api-status-text">未配置</span>
     </div>
   </div>
   
-  <!-- AI 模式选择 -->
+  <!-- API 配置 -->
   <div class="config-section" style="margin-bottom: 16px;">
-    <div class="config-title">AI 模式选择</div>
-    <div class="config-row">
-      <label>
-        <input type="radio" name="ai-mode" value="gemini" checked> Gemini 网页版
-      </label>
+    <div class="config-title">API 配置</div>
+    <div class="config-row" style="flex-direction: column; align-items: stretch;">
+      <label style="margin-bottom: 8px;">Base URL</label>
+      <input type="text" id="api-base-url" placeholder="https://api.hodlai.fun/v1" style="width: 100%;">
     </div>
-    <div class="config-row">
-      <label>
-        <input type="radio" name="ai-mode" value="api"> API 调用
-      </label>
+    <div class="config-row" style="flex-direction: column; align-items: stretch; margin-top: 12px;">
+      <label style="margin-bottom: 8px;">API Key</label>
+      <input type="password" id="api-key" placeholder="sk-xxxxxxx" style="width: 100%;">
     </div>
-  </div>
-  
-  <!-- Gemini 模式控制 -->
-  <div id="gemini-mode-section">
-    <button class="btn btn-primary" id="open-gemini-btn">
-      打开 Gemini
+    <div class="config-row" style="flex-direction: column; align-items: stretch; margin-top: 12px;">
+      <label style="margin-bottom: 8px;">模型</label>
+      <select id="api-model" style="width: 100%; padding: 8px; background: #15202b; color: #fff; border: 1px solid #38444d; border-radius: 8px;">
+        <option value="gpt-4o">GPT-4o</option>
+        <option value="gpt-4o-mini">GPT-4o Mini</option>
+        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+        <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
+        <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+        <option value="grok-3">Grok-3</option>
+      </select>
+    </div>
+    <button class="btn btn-secondary" id="test-api-btn" style="margin-top: 12px;">
+      测试 API 连接
     </button>
-  </div>
-  
-  <!-- API 模式配置 -->
-  <div id="api-mode-section" style="display: none;">
-    <div class="config-section" style="margin-bottom: 16px;">
-      <div class="config-title">API 配置</div>
-      <div class="config-row" style="flex-direction: column; align-items: stretch;">
-        <label style="margin-bottom: 8px;">Base URL</label>
-        <input type="text" id="api-base-url" placeholder="https://api.hodlai.fun/v1" style="width: 100%;">
-      </div>
-      <div class="config-row" style="flex-direction: column; align-items: stretch; margin-top: 12px;">
-        <label style="margin-bottom: 8px;">API Key</label>
-        <input type="password" id="api-key" placeholder="sk-xxxxxxx" style="width: 100%;">
-      </div>
-      <div class="config-row" style="flex-direction: column; align-items: stretch; margin-top: 12px;">
-        <label style="margin-bottom: 8px;">模型</label>
-        <select id="api-model" style="width: 100%; padding: 8px; background: #15202b; color: #fff; border: 1px solid #38444d; border-radius: 8px;">
-          <option value="gpt-4o">GPT-4o</option>
-          <option value="gpt-4o-mini">GPT-4o Mini</option>
-          <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-          <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
-          <option value="gemini-3-pro-preview">Gemini 3.0 Pro Preview</option>
-          <option value="grok-4.1-fast">Grok 4.1 fast</option>
-        </select>
-      </div>
-      <button class="btn btn-secondary" id="test-api-btn" style="margin-top: 12px;">
-        测试 API 连接
-      </button>
-      <div id="api-test-result" style="margin-top: 8px; font-size: 12px;"></div>
-    </div>
+    <div id="api-test-result" style="margin-top: 8px; font-size: 12px;"></div>
   </div>
   
   <!-- 一键启动 -->
